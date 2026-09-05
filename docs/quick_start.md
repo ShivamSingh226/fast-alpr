@@ -55,3 +55,108 @@ results = drawn.results
 Annotated frame:
 
 <img alt="ALPR Draw Predictions" src="https://github.com/ankandrew/fast-alpr/releases/download/assets/alpr_draw_predictions.webp"/>
+
+### Draw Results on Video
+
+`draw_predictions()` can also be called for every video frame. This writes an annotated video and
+prints each recognized plate with its OCR confidence percentage:
+
+```python
+import cv2
+
+from fast_alpr import ALPR
+
+alpr = ALPR(
+    detector_model="yolo-v9-t-384-license-plate-end2end",
+    ocr_model="cct-xs-v2-global-model",
+)
+
+input_path = "assets/test_video.mp4"
+output_path = "annotated_video.mp4"
+capture = cv2.VideoCapture(input_path)
+
+if not capture.isOpened():
+    raise RuntimeError(f"Could not open {input_path}")
+
+fps = capture.get(cv2.CAP_PROP_FPS) or 25
+width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+writer = cv2.VideoWriter(
+    output_path,
+    cv2.VideoWriter_fourcc(*"mp4v"),
+    fps,
+    (width, height),
+)
+
+frame_number = 0
+while True:
+    ok, frame = capture.read()
+    if not ok:
+        break
+
+    drawn = alpr.draw_predictions(frame)
+    writer.write(drawn.image)
+
+    for result in drawn.results:
+        if result.ocr is not None:
+            confidence = result.ocr.confidence
+            if isinstance(confidence, list):
+                confidence = sum(confidence) / len(confidence)
+            timestamp = frame_number / fps
+            print(f"{timestamp:.2f}s {result.ocr.text} {confidence * 100:.2f}%")
+    frame_number += 1
+
+capture.release()
+writer.release()
+```
+
+For a ready-to-use command that also writes a CSV containing plate text, timestamps, confidence
+percentages, and bounding boxes, run:
+
+```shell
+uv run --no-sync fast-alpr-video assets/test_video.mp4 \
+    --output-video annotated_video.mp4 \
+    --output-csv alpr_detections.csv
+```
+
+### Process Live CCTV Feeds
+
+The live runner reads the camera IDs from the CCTV catalogue instead of hard-coding the camera
+set. RTSP is the default and is forced over TCP. Keep credentials in environment variables; the
+runner percent-encodes the email and password before constructing each RTSP URL.
+
+```shell
+export CCTV_EMAIL='you@example.com'
+export CCTV_PASSWORD='your-access-password'
+```
+
+Start with one camera for a 60-second smoke test:
+
+```shell
+uv run --no-sync fast-alpr-live \
+    --camera-id cam04 \
+    --duration 60 \
+    --output-csv live-cam04-detections.csv
+```
+
+Process every camera currently returned by `cameras.json`:
+
+```shell
+uv run --no-sync fast-alpr-live \
+    --duration 300 \
+    --output-csv live-detections.csv
+```
+
+If RTSP is blocked by the network, use the HLS endpoints:
+
+```shell
+uv run --no-sync fast-alpr-live \
+    --protocol hls \
+    --camera-id cam04 \
+    --duration 60 \
+    --output-csv live-cam04-detections.csv
+```
+
+Each CSV row contains the camera ID, source PTS, frame number, plate text, OCR confidence,
+detector confidence, and bounding box. The runner reconnects failed feeds with exponential
+backoff capped at 30 seconds and does not use arrival time or reported FPS for stream timing.

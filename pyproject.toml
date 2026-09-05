@@ -47,6 +47,10 @@ onnx-openvino = ["onnxruntime-openvino>=1.19.2"]
 onnx-directml = ["onnxruntime-directml>=1.19.2"]
 onnx-qnn = ["onnxruntime-qnn>=1.19.2"]
 
+[project.scripts]
+fast-alpr-video = "fast_alpr.video:main"
+fast-alpr-live = "fast_alpr.live:main"
+
 [dependency-groups]
 test = ["pytest"]
 dev = [

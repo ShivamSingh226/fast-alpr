@@ -186,11 +186,6 @@ class ALPR:
             text_thickness = 1 if font_scale < 0.75 else 2
             outline_thickness = text_thickness + max(3, round(font_scale * 3))
             display_lines = [f"{ocr_result.text} {confidence * 100:.0f}%"]
-            if ocr_result.region:
-                region_text = ocr_result.region
-                if ocr_result.region_confidence is not None:
-                    region_text = f"{region_text} {ocr_result.region_confidence * 100:.0f}%"
-                display_lines.insert(0, region_text)
 
             _, text_height = cv2.getTextSize(
                 display_lines[0], cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_thickness

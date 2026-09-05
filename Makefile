@@ -22,7 +22,7 @@ help:
 .PHONY: install
 install:
 	@echo "==> Installing project with all required dependencies..."
-	uv sync --locked --all-groups --extra onnx
+	uv sync --locked --all-groups --extra onnx --no-editable
 
 .PHONY: format
 format:
