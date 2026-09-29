@@ -107,6 +107,7 @@ celerybeat.pid
 
 # Environments
 .env
+db/camera_locations.json
 .venv
 env/
 venv/

@@ -114,7 +114,7 @@ For a ready-to-use command that also writes a CSV containing plate text, timesta
 percentages, and bounding boxes, run:
 
 ```shell
-uv run --no-sync fast-alpr-video assets/test_video.mp4 \
+uv run fast-alpr-video assets/test_video.mp4 \
     --output-video annotated_video.mp4 \
     --output-csv alpr_detections.csv
 ```
@@ -133,7 +133,7 @@ export CCTV_PASSWORD='your-access-password'
 Start with one camera for a 60-second smoke test:
 
 ```shell
-uv run --no-sync fast-alpr-live \
+uv run fast-alpr-live \
     --camera-id cam04 \
     --duration 60 \
     --output-csv live-cam04-detections.csv
@@ -142,7 +142,7 @@ uv run --no-sync fast-alpr-live \
 Process every camera currently returned by `cameras.json`:
 
 ```shell
-uv run --no-sync fast-alpr-live \
+uv run fast-alpr-live \
     --duration 300 \
     --output-csv live-detections.csv
 ```
@@ -150,13 +150,14 @@ uv run --no-sync fast-alpr-live \
 If RTSP is blocked by the network, use the HLS endpoints:
 
 ```shell
-uv run --no-sync fast-alpr-live \
+uv run fast-alpr-live \
     --protocol hls \
     --camera-id cam04 \
     --duration 60 \
     --output-csv live-cam04-detections.csv
 ```
 
-Each CSV row contains the camera ID, source PTS, frame number, plate text, OCR confidence,
-detector confidence, and bounding box. The runner reconnects failed feeds with exponential
-backoff capped at 30 seconds and does not use arrival time or reported FPS for stream timing.
+Each CSV row has the same fields as its Redis sighting event: event ID, camera ID, plate and
+normalized plate, latitude/longitude, location-known flag, UTC capture time, source PTS, frame
+number, and OCR/detector confidence. The runner reconnects failed feeds with exponential backoff
+capped at 30 seconds and does not use arrival time or reported FPS for stream timing.

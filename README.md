@@ -43,17 +43,22 @@ model of your choice.
 
 ## 📦 Installation
 
+Install the published package from the package index:
+
 ```shell
 pip install fast-alpr[onnx-gpu]
 ```
 
-For this repository with Python 3.13, install the local project as a regular wheel:
+For the repository checkout, use the normal project environment workflow:
 
 ```shell
-uv sync --extra onnx --no-editable
+uv sync
+uv run fast-alpr-video assets/videos/Cam-1.mp4 \
+  --output-video assets/videos/Cam-1-annotated.mp4 \
+  --output-csv assets/videos/Cam-1-detections.csv
 ```
 
-By default, **no ONNX runtime is installed**. To run inference, you **must** install at least one ONNX backend using an appropriate extra.
+The project declares ONNX Runtime in the base dependency list so the CLI command can resolve the package import path without a hidden fallback.
 
 | Platform/Use Case  | Install Command                        | Notes                |
 |--------------------|----------------------------------------|----------------------|
@@ -125,13 +130,14 @@ environment variables so they are not stored in command history:
 export CCTV_EMAIL='you@example.com'
 export CCTV_PASSWORD='your-access-password'
 
-uv run --no-sync fast-alpr-live --camera-id cam04 --duration 60 \
+uv run fast-alpr-live --camera-id cam04 --duration 60 \
     --output-csv live-cam04-detections.csv
 ```
 
 Omit `--camera-id` to process every camera returned by `cameras.json`. Use `--protocol hls` when
 RTSP is unavailable. The CSV includes camera ID, source PTS, recognized plate, OCR percentage,
-detector percentage, and bounding-box coordinates. See the [live CCTV guide](docs/quick_start.md#process-live-cctv-feeds)
+detector percentage, capture time, normalized plate, and location metadata. Its columns match the
+Redis sighting event schema. See the [live CCTV guide](docs/quick_start.md#process-live-cctv-feeds)
 for reconnect behavior and the full command examples.
 
 ## 🛠️ Customization and Flexibility
@@ -215,5 +221,3 @@ To start contributing or to begin development, you can follow these steps:
 For questions or suggestions, feel free to open an issue.
 
 
-### One TIme acess password
-- DW8U-6DAU-K46A

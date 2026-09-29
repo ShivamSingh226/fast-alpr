@@ -15,6 +15,24 @@ from fast_alpr.alpr import ALPR
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
 
+def test_project_dependencies_include_onnxruntime() -> None:
+    pyproject_text = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text()
+
+    assert 'onnxruntime>=1.19.2' in pyproject_text
+
+
+def test_repo_docs_do_not_teach_no_sync_no_editable_workarounds() -> None:
+    repo_root = Path(__file__).resolve().parent.parent
+    readme_text = (repo_root / "README.md").read_text()
+    installation_text = (repo_root / "Installation.md").read_text()
+
+    doc_text = readme_text + "\n" + installation_text
+    assert "uv sync --no-editable" not in doc_text
+    assert "uv run --no-sync" not in doc_text
+    assert "--no-sync" not in doc_text
+    assert "--no-editable" not in doc_text
+
+
 @pytest.fixture(scope="module", name="alpr")
 def alpr_fixture() -> ALPR:
     return ALPR(
